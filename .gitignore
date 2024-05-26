@@ -34,9 +34,10 @@ __pycache__/
 
 # models
 /models/*
-/models/base/*
+!/models/__init__.py
 
 /modelpng/*
+!/modelpng/.gitkeep
 
 note.md
 
