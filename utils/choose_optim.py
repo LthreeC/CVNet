@@ -1,22 +1,21 @@
 import torch.optim as optim
 
-def choose_optimizer(Optimizer, parameters, lr, betas=(0.9, 0.999), weight_decay=0):
-    optimizer_name = Optimizer.lower()
+def choose_optimizer(Optimizer, parameters, **kwargs):
+    optimizers = {
+        "SGD": optim.SGD,
+        "Adam": optim.Adam,
+        "RMSprop": optim.RMSprop,
+        "Adagrad": optim.Adagrad,
+        "AdamW": optim.AdamW,
+        "Adamax": optim.Adamax,
+        "ASGD": optim.ASGD,
+        "LBFGS": optim.LBFGS,
+        "Rprop": optim.Rprop,
+    }
 
-    available_optimizers = [
-        "sgd", "adam", "rmsprop", "adagrad", "adadelta", "adamax", "asgd", "lbfgs"
-    ]
+    if Optimizer not in optimizers:
+        raise ValueError(f"Invalid optimizer choice. Please choose from {list(optimizers.keys())}.")
+    if optimizers[Optimizer] is None:
+        raise ValueError(f"Missing required parameters for {Optimizer}.")
 
-    if optimizer_name not in available_optimizers:
-        raise ValueError(f"Invalid optimizer choice. Please choose from {available_optimizers}.")
-
-    optimizer_cls = getattr(optim, optimizer_name.capitalize())
-
-    if optimizer_name in ["adam", "adamax"]:
-        optimizer = optimizer_cls(parameters, lr=lr, betas=betas, weight_decay=weight_decay)
-    elif optimizer_name in ["sgd", "rmsprop", "adagrad", "adadelta", "asgd"]:
-        optimizer = optimizer_cls(parameters, lr=lr, weight_decay=weight_decay)
-    elif optimizer_name == "lbfgs":
-        optimizer = optimizer_cls(parameters)
-
-    return optimizer
+    return optimizers[Optimizer](params=parameters, **kwargs)

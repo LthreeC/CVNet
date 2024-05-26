@@ -1,7 +1,9 @@
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import torch.utils.data as Data
-from dataproc.config import Mean, Std
+
+Mean = [0.76313736, 0.5474047, 0.57174409]
+Std = [0.09055175, 0.11924913, 0.13393524]
 
 def data_process(ROOT, ReSize=256, BatchSize=32):
     normalize = transforms.Normalize(mean=Mean, std=Std)

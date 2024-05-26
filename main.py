@@ -7,8 +7,24 @@ import torch
 from tqdm import tqdm
 import argparse
 from dataproc import data_process
-from models import choose_model, show_model
+from models import show_model
 from utils import *
+
+# load model
+from models import *
+
+def choose_model(ModelName, **kwargs):
+    model_name = ModelName.lower()
+    models_dict = {
+        'efficientnetb0': EfficientNetB0,
+        'medmamba': VSSM,
+        'ours': MIX,
+        'mix': MIX
+    }
+    if model_name not in models_dict:
+        raise ValueError('Invalid model name: {}'.format(model_name))
+
+    return models_dict[model_name](**kwargs)
 
 
 class Runner(object):
@@ -16,6 +32,7 @@ class Runner(object):
                  ReSize, ResultDir="results") -> None:
         self.Epochs = Epochs
         self.device = Device
+        self.ModelName = ModelName
         self.train_dataloader, self.num_classes = data_process(os.path.join(DatasetPath, "train"), ReSize=ReSize, BatchSize=BatchSize)
         self.valid_dataloader, self.num_classes = data_process(os.path.join(DatasetPath, "val"), ReSize=ReSize, BatchSize=BatchSize)
         self.test_dataloader, self.num_classes = data_process(os.path.join(DatasetPath, "test"), ReSize=ReSize, BatchSize=BatchSize)
@@ -29,13 +46,17 @@ class Runner(object):
         showing_data(self.train_dataloader)
 
         print("-------------Starting--------------")
+        # choose classes
         self.model = choose_model(ModelName, num_classes=self.num_classes).to(self.device)
         if ShowingModel:
             show_model(self.model)
             sys.exit(0)
 
+        # here change loss_fn
         self.loss_fn = choose_lossfn(LossFn)
+        # here change optimizer
         self.optimizer = choose_optimizer(Optimizer, parameters=self.model.parameters(), lr=LrRate)
+        # here change scheduler
         self.scheduler = choose_schedular(Schedular=Schedular, optimizer=self.optimizer, step_size=10, gamma=0.1)
 
         self.ResultDir = ResultDir
@@ -47,8 +68,8 @@ class Runner(object):
         self.final_model_path = os.path.join(self.save_mode_dir, "final_model.pth")
 
     def setup_logging(self):
-        current_time = datetime.now().strftime("%Y_%m%d_%H%M_%S")
-        self.run_dir = os.path.join(self.ResultDir, f"ret_{current_time}")
+        current_time = datetime.now().strftime("%Y_%m%d_%H%M%S")
+        self.run_dir = os.path.join(self.ResultDir, f"{self.ModelName}_{current_time}_{self.Epochs}")
         self.save_mode_dir = os.path.join(self.run_dir, "save_model")
         self.metrics_dir = os.path.join(self.run_dir, "metrics")
 
@@ -74,7 +95,7 @@ class Runner(object):
                 writer.writerow([param, value])
 
     def write_metrics(self, phase, epoch, loss, metrics, lr, mode):
-        accuracy, precision, recall, f1, specificity = metrics
+        accuracy, precision, recall, f1, specificity, roc, avg_precision = metrics
         log_message = [mode, epoch, loss, lr, accuracy * 100, precision * 100, recall * 100, f1 * 100, specificity * 100]
         print(f'{phase} Mode{mode} Epoch {epoch} | Loss: {loss:.4f} | Learning Rate: {lr:.6f} | '
               f'Accuracy: {accuracy * 100:.2f}% | '
@@ -182,8 +203,8 @@ class Runner(object):
         for epoch in range(1, self.Epochs + 1):
             print(f'\nEpoch: {epoch}/{self.Epochs}')
             self.train_epoch(epoch)
-            self.valid_epoch(epoch)
             self.scheduler.step()
+            self.valid_epoch(epoch)
 
         # Save final model
         torch.save(self.model.state_dict(), self.final_model_path)
@@ -218,4 +239,4 @@ if __name__ == "__main__":
                     args.Epochs, args.LrRate, args.BatchSize, args.ReSize)
     runner.run()
 
-    # TODO add cross-validation: dataproc, main
+    # TODO change param in schedular, optimizer, lossfn   through dict? or argparse?

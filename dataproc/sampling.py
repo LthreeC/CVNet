@@ -4,7 +4,10 @@ import shutil
 from PIL import Image
 import torchvision.transforms as transforms
 from tqdm import tqdm
-from dataproc.config import INPUT_FOLDER, OUTPUT_FOLDER, TARGET_COUNT
+
+TARGET_COUNT = 1400
+INPUT_FOLDER = '../datasets/merged_split/train'
+OUTPUT_FOLDER = '../datasets/merged_split/train_sampled'
 
 def oversample_images(input_folder_path, output_folder_path, target_count):
     image_paths = [os.path.join(input_folder_path, img) for img in os.listdir(input_folder_path) if
@@ -12,8 +15,8 @@ def oversample_images(input_folder_path, output_folder_path, target_count):
     num_images = len(image_paths)
 
     transform = transforms.Compose([
-        transforms.RandomRotation(degrees=15),
-        transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
+        # transforms.RandomRotation(degrees=15),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip()
     ])

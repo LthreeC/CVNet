@@ -3,7 +3,9 @@ import os
 from PIL import Image
 from torchvision import transforms
 from tqdm import tqdm
-from dataproc.config import IMAGE_FOLDER
+
+IMAGE_FOLDER = '../datasets/ts_data0/ack'
+
 
 def calculate_mean_and_std(image_folder):
     image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff']

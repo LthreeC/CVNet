@@ -27,3 +27,12 @@ share/python-wheels/
 
 # Ignore all __pycache__ directories
 __pycache__/
+
+
+# models
+models/net_MIX.py
+models/base/*
+
+modelpng/*
+
+note.md
