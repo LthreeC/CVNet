@@ -1,3 +1,6 @@
+*.gitignore
+
+
 # no for this
 test
 results/*
@@ -30,9 +33,10 @@ __pycache__/
 
 
 # models
-models/net_MIX.py
-models/base/*
+/models/*
+/models/base/*
 
-modelpng/*
+/modelpng/*
 
 note.md
+
